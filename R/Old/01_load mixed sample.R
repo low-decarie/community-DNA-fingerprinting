@@ -21,10 +21,18 @@ library(seqinr)
 raw.trace<-read.abif(file.choose(), verbose=F)
 
 #Extract trace data
-clean.trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]), A=raw.trace$Data[["DATA.1"]],T=raw.trace$Data[["DATA.2"]],C=raw.trace$Data[["DATA.3"]],G=raw.trace$Data[["DATA.4"]])
+clean.trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
+                        A=raw.trace$Data[["DATA.1"]],
+                        T=raw.trace$Data[["DATA.2"]],
+                        C=raw.trace$Data[["DATA.3"]],
+                        G=raw.trace$Data[["DATA.4"]])
 
 #Extract peak position
 peak.position<-raw.trace$Data[["PLOC.2"]]
+
+#Add peak position to clean trace data
+clean.trace$peak<-FALSE
+clean.trace$peak[clean.trace$datum %in% peak.position]<-TRUE
 
 #Extract trace values at peak
 trace.at.peak<-clean.trace[peak.position,]
