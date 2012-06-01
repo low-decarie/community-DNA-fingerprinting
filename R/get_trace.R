@@ -19,7 +19,7 @@ clean.trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
 
 
 #Smooth the data
-trace.smooth<-function(trace, type="Savitsky-Golay", width=10){
+trace.smooth<<-function(trace, type="Savitsky-Golay", width=10){
   
   if(type=="lowess"){
     smooth.trace<-with(clean.trace, lowess(x=1:length(trace),
@@ -69,13 +69,15 @@ clean.trace<-data.frame(clean.trace,
 #find minimas
 #function
 find.min<-function(trace){
-  #initilize slope and minimas
-  if(trace[1+1]<trace[1]) {slope<- -1} else {slope<-1}
+  #initilize slope and minima
+  if(na.omit(trace)[1+1]<na.omit(trace)[1]) {slope<- -1} else {slope<-1}
   
   minima.group<-1
   minima<-rep(NA, length(trace))
   
   for(i in 2:length(trace)){
+    print(i)
+    if(!is.na(trace[i]) & !is.na(trace[i-1])){
     if(trace[i]<trace[i-1] & slope==1){
       slope<- -1
       minima[i]<-minima.group
@@ -85,9 +87,10 @@ find.min<-function(trace){
       minima[i]<-minima.group
       trace$minima[i]<-1
     } else {minima[i]<-minima.group}
+    }else {minima[i]<-minima.group}
     
   }
-  return(trace)
+  return(minima)
 }
 
 ##################
