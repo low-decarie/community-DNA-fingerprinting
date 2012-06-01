@@ -2,10 +2,15 @@ plot_trace<-function(trace,
                      region=c(1, length(trace[,1])),
                      peak.loc=F,
                      print.plot=T,
+                     split=F,
+                     smooth=F,
                      ...){
 
   if(!require(ggplot2)){
     install.packages("ggplot2")}
+
+  if(!require(reshape)){
+    install.packages("reshape")}
   
   if(!require(reshape2)){
     install.packages("reshape2")}
@@ -17,13 +22,28 @@ melt_trace<<-function(trace){
 
 melt.trace<-melt_trace(trace)
 
-trace.plot<-qplot(data=melt.trace,
+melt.trace$type<-"smooth"
+melt.trace$type[melt.trace$variable %in% c("A","T","C","G")]<-"value"
+melt.trace$variable<-substr(melt.trace$variable,1,1)
+  
+cast.trace<-cast(melt.trace,
+                 formula=...~type)
+
+plot.value<-"value"
+if(smooth){plot.value<-"smooth"}
+
+trace.plot<-qplot(data=cast.trace,
                     x=datum,
-                    y=value,
+                    y=get(plot.value),
                     colour=variable,
                     geom="line",
                   xlim=region,
+                  ylab=plot.value,
                   ...)
+  
+if(split){
+  trace.plot<-trace.plot+facet_grid(.~variable)
+}
   
 if(peak.loc){
   trace.plot<-trace.plot+geom_vline(xintercept=unique(melt.trace$datum[melt.trace$peak]),
