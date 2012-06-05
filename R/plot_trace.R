@@ -4,6 +4,7 @@ plot_trace<-function(trace,
                      print.plot=T,
                      split=F,
                      smooth=F,
+                     min=F,
                      ...){
 
   if(!require(ggplot2)){
@@ -16,19 +17,25 @@ plot_trace<-function(trace,
     install.packages("reshape2")}
 
 
-melt_trace<<-function(trace){
-  melt(data=trace,
-                 id.vars=c("datum", "peak"))}
-
-melt.trace<-melt_trace(trace)
-
-melt.trace$type<-"smooth"
-melt.trace$type[melt.trace$variable %in% c("A","T","C","G")]<-"value"
-melt.trace$variable<-substr(melt.trace$variable,1,1)
+melt.trace<-melt(data=trace,
+                   id.vars=c("datum"))
   
-cast.trace<-cast(melt.trace,
-                 formula=...~type)
+  cast_trace<-function(melt.trace){
+    melt.trace$type[melt.trace$variable %in% c("A","T","C","G")]<-"value"
+    melt.trace$type[melt.trace$variable %in% c("A.smooth","T.smooth","C.smooth","G.smooth")]<-"smooth"
+    melt.trace$variable<-substr(melt.trace$variable,1,1)
+    
+    cast.trace<-cast(melt.trace,
+                     formula=...~type)
+    
+    
+    
+    return(cast.trace)
+  }
 
+cast.trace<-cast_trace(melt.trace)
+  
+  
 plot.value<-"value"
 if(smooth){plot.value<-"smooth"}
 
@@ -40,14 +47,15 @@ trace.plot<-qplot(data=cast.trace,
                   xlim=region,
                   ylab=plot.value,
                   ...)
+
   
 if(split){
   trace.plot<-trace.plot+facet_grid(.~variable)
 }
   
 if(peak.loc){
-  trace.plot<-trace.plot+geom_vline(xintercept=unique(melt.trace$datum[melt.trace$peak]),
-                                    alpha=I(0.1))
+#   trace.plot<-trace.plot+geom_vline(xintercept=unique(melt.trace$datum[melt.trace$peak]),
+#                                     alpha=I(0.1))
 }
   
 if(print.plot){
