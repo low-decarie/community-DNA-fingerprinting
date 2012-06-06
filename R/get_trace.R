@@ -4,7 +4,7 @@
 #function dependencies
 # -smooth_trace
 
-get_trace<-function(file,type="Savitsky-Golay", width=10, round=F, accuracy=5){
+get_trace<-function(file,type="Savitsky-Golay", width=10,rm.min=TRUE, min.peak=1000){
 
   
 #Load and/or install required packages
@@ -22,31 +22,45 @@ trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
                         G=raw.trace$Data[["DATA.4"]])
 
 
-#Smooth the data
-trace<-data.frame(trace,
-                            A.smooth=smooth_trace(trace$A,type, width),
-                             T.smooth=smooth_trace(trace$T,type, width),
-                             C.smooth=smooth_trace(trace$C,type, width),
-                             G.smooth=smooth_trace(trace$G,type, width))
 
-#Pad with 0 rather to replace NA
-trace$A.smooth[is.na(trace$A.smooth)]<-0
-trace$T.smooth[is.na(trace$T.smooth)]<-0
-trace$C.smooth[is.na(trace$C.smooth)]<-0
-trace$G.smooth[is.na(trace$G.smooth)]<-0
-                                  
+#Call bases
+trace<-ddply(.data=trace,
+                  .variable="datum",
+                  function(x){
+                    base<-"N"
+                    base.call.quality<-0
+                    sum.value=sum(x$A,x$T,x$C,x$G)
+                    max.value=max(x$A,x$T,x$C,x$G)
+                    if(x$A>max(x$T,x$C,x$G)){
+                      base<-"A"
+                      base.call.quality<-x$A/sum.value
+                    }
+                    if(x$T>max(x$A,x$C,x$G)){
+                      base<-"T"
+                      base.call.quality<-x$T/sum.value
+                    }
+                    if(x$C>max(x$T,x$A,x$G)){
+                      base<-"C"
+                      base.call.quality<-x$G/sum.value
+                    }
+                    if(x$G>max(x$T,x$C,x$A)){
+                      base<-"G"
+                      base.call.quality<-x$A/sum.value
+                    }
+                    trace<-data.frame(x,base.call=base,
+                                      max.value=max.value,
+                                      sum.value=sum.value,
+                                      base.call.quality=base.call.quality)
+                    return(trace)},
+                  .progress="text")
+
+#Smooth max value
+trace$smooth.max<-as.numeric(with(trace, smooth_trace(max.value, type, width)))
+trace$smooth.max[is.na(trace$smooth.max)]<-0
 
 #Get peaks
-trace<-data.frame(trace,
-                  A.peak=get_peak(trace$A.smooth, round, accuracy),
-                  T.peak=get_peak(trace$T.smooth, round, accuracy),
-                  C.peak=get_peak(trace$C.smooth, round, accuracy),
-                  G.peak=get_peak(trace$G.smooth, round, accuracy))
+trace$peak<-with(trace, get_peak(smooth.max, rm.min, min.peak))
 
-
-trace$peak<-with(trace, A.peak|T.peak|C.peak|G.peak)
-
-# 
 return(trace)
 }
 
