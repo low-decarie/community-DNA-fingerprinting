@@ -1,7 +1,7 @@
 #####################
 #find peak
 #function
-get_peak<-function(trace, rm.min=TRUE, min.peak=500, round=TRUE, accuracy=5){
+get_peak<-function(trace, rm.min=TRUE, min.peak=500, round=F, accuracy=5){
   
   #initilize slope and peak
   if(na.omit(trace)[1+1]<na.omit(trace)[1]) {slope<- -1} else {slope<-1}
@@ -31,7 +31,7 @@ get_peak<-function(trace, rm.min=TRUE, min.peak=500, round=TRUE, accuracy=5){
   
   if(round){
   peak.temp<-rep(FALSE,length(peak))
-  peak.temp[floor((1:length(peak))[peak]/accuracy)*accuracy]<-TRUE
+  peak.temp[round((1:length(peak))[peak]/accuracy)*accuracy]<-TRUE
   peak<-peak.temp
   }
   

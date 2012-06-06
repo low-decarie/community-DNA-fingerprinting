@@ -4,7 +4,7 @@
 #function dependencies
 # -smooth_trace
 
-get_trace<-function(file,type="Savitsky-Golay", width=10){
+get_trace<-function(file,type="Savitsky-Golay", width=10, round=F, accuracy=5){
 
   
 #Load and/or install required packages
@@ -15,7 +15,7 @@ if(!require(seqinr)){
 raw.trace<-read.abif(file, verbose=F)
 
 #Extract trace data
-clean.trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
+trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
                         A=raw.trace$Data[["DATA.1"]],
                         T=raw.trace$Data[["DATA.2"]],
                         C=raw.trace$Data[["DATA.3"]],
@@ -23,33 +23,30 @@ clean.trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
 
 
 #Smooth the data
-clean.trace<-data.frame(clean.trace,
-                            A.smooth=smooth_trace(clean.trace$A,type, width),
-                             T.smooth=smooth_trace(clean.trace$T,type, width),
-                             C.smooth=smooth_trace(clean.trace$C,type, width),
-                             G.smooth=smooth_trace(clean.trace$G,type, width))
+trace<-data.frame(trace,
+                            A.smooth=smooth_trace(trace$A,type, width),
+                             T.smooth=smooth_trace(trace$T,type, width),
+                             C.smooth=smooth_trace(trace$C,type, width),
+                             G.smooth=smooth_trace(trace$G,type, width))
 
 #Pad with 0 rather to replace NA
-clean.trace$A.smooth[is.na(clean.trace$A.smooth)]<-0
-clean.trace$T.smooth[is.na(clean.trace$T.smooth)]<-0
-clean.trace$C.smooth[is.na(clean.trace$C.smooth)]<-0
-clean.trace$G.smooth[is.na(clean.trace$G.smooth)]<-0
+trace$A.smooth[is.na(trace$A.smooth)]<-0
+trace$T.smooth[is.na(trace$T.smooth)]<-0
+trace$C.smooth[is.na(trace$C.smooth)]<-0
+trace$G.smooth[is.na(trace$G.smooth)]<-0
                                   
 
-# #Extract peak position (peak position as determined by the sequencer)
-# peak.position<-raw.trace$Data[["PLOC.2"]]
+#Get peaks
+trace<-data.frame(trace,
+                  A.peak=get_peak(trace$A.smooth, round, accuracy),
+                  T.peak=get_peak(trace$T.smooth, round, accuracy),
+                  C.peak=get_peak(trace$C.smooth, round, accuracy),
+                  G.peak=get_peak(trace$G.smooth, round, accuracy))
 
 
-# peaks<-peakabif(abifdata=raw.trace,
-#                 chanel=1,
-#                 npeak=length(peak.position),
-#                 fig=F)
-                
+trace$peak<-with(trace, A.peak|T.peak|C.peak|G.peak)
 
-#Add peak position to clean trace data
-# clean.trace$peak<-FALSE
-# clean.trace$peak[clean.trace$datum %in% peak.position]<-TRUE
 # 
-return(clean.trace)
+return(trace)
 }
 
