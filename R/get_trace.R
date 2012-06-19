@@ -11,6 +11,9 @@ get_trace<-function(file,type="Savitsky-Golay", width=10,rm.min=TRUE, min.peak=1
 if(!require(seqinr)){
   install.packages("seqinr")}
 
+if(!require(plyr)){
+  install.packages("plyr")}
+
 #Load raw data
 raw.trace<-read.abif(file, verbose=F)
 
