@@ -1,3 +1,5 @@
+#Alignement of base pair calls using the Biostrings package from bioconductor
+
 align_seq<-function(species_trace_1, community_trace){
   
   if(!require(Biostrings)){

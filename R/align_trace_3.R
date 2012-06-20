@@ -9,6 +9,12 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
     shift_1<-par[1]
     shift_2<-par[2]
     
+    check.integer <- function(N){
+      !length(grep("[^[:digit:]]", as.character(N)))
+    }
+    
+    if(all(check.integer(shift_1), check.integer(shift_2))){
+    
   #Extract base trace information
     trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
     trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
@@ -55,31 +61,34 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
     }
     
     if(shift_2>0){
-      trace_1<-rbind(trace_2, blank.shift.2 )
-      trace_2<-rbind(blank.shift.2, trace_1)
+      trace_2<-rbind(trace_2, blank.shift.2 )
+      trace_1<-rbind(blank.shift.2, trace_1)
       trace_3<-rbind(blank.shift.2, trace_3)
     }
     if(shift_2<0){
-      trace_1<-rbind(blank.shift.2,trace_2)
-      trace_2<-rbind(trace_1, blank.shift.2)
+      trace_2<-rbind(blank.shift.2,trace_2)
+      trace_1<-rbind(trace_1, blank.shift.2)
       trace_3<-rbind(trace_3, blank.shift.2)
     }
     
 
     
-    
-    
-    
     deviation<-sum((trace_1-trace_2)^2, (trace_1-trace_3)^2, (trace_2-trace_3)^2)
     
-    return(deviation)
+    
+  }else{
+    deviation<-NA
+  } 
+  return(deviation)
   }
   
   fit<-optim(par=c(0,0),
               fn=shift_optim,
                 trace_1=trace_1,
                 trace_2=trace_2,
-              trace_3=trace_3)
+              trace_3=trace_3,
+             method="SANN",
+             control=list(trace=2, ndeps=2))
   
   return(fit)
   

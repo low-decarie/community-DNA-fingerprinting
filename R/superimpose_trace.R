@@ -14,7 +14,7 @@ plot_trace<-function(trace_1,
   trace.2<-B7_F
   trace.3<-AB7_F
   
-  region<-c(5000,5500)
+  region<-c(10000,11000)
   
   if(!require(ggplot2)){
     install.packages("ggplot2")}
@@ -44,13 +44,13 @@ plot_trace<-function(trace_1,
   
   
   trace.plot<-trace.plot+geom_line(data=melt.2,
-                                   aes(x=datum-188,
+                                   aes(x=datum-185.7946,
                                        y=value),
                                    alpha=(0.5),
                                    linetype=I(2))
   
   trace.plot<-trace.plot+geom_line(data=melt.3,
-                                   aes(x=datum,
+                                   aes(x=datum+65.69755,
                                        y=value),
                                    alpha=(0.5),
                                    linetype=I(3))

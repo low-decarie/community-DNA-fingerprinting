@@ -1,9 +1,18 @@
-#Align using all base traces (A and B and C...)
+#Align two traces using all base traces (A and B and C...)
 
-align_trace<-function(trace_1, trace_2, silent=F){
+align_trace<-function(trace_1, trace_2, silent=F,...){
+  
+  if(!require(DEoptim)){install.packages("DEoptim")}
+  if(!require(NMOF)){install.packages("NMOF")}
+  if(!require(pso)){install.packages("pso")}
+
   
   
   shift_optim<-function(shift, trace_1, trace_2){
+    
+    
+    #Rounding may help focus on integers, but flattens the function between integers
+    shift<-round(shift)
     
     trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
     trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
@@ -48,13 +57,48 @@ align_trace<-function(trace_1, trace_2, silent=F){
     return(deviation)
   }
   
-  fit<-optimize(f=shift_optim,
-                lower=-1000, 
-                upper=1000, 
-                trace_1=trace_1,
-                trace_2=trace_2)
+#Searching continuous space is not very good
+#   fit<-optimize(f=shift_optim,
+#                 lower=-1000, 
+#                 upper=1000, 
+#                 trace_1=trace_1,
+#                 trace_2=trace_2,
+#                 tol=3)
   
-  return(fit$minimum)
+  
+#   neighbour<-function(x,...){
+#        x + sample(seq(-20,20), length(x), replace=TRUE)}
+#   
+#    fit<-optim(par=0,
+#               f=shift_optim,
+#               gr=neighbour,
+#               method="SANN",
+#                   trace_1=trace_1,
+#                   trace_2=trace_2,
+#               control=list(...))
+  
+  fit<-psoptim(par=0,
+             fn=shift_optim,
+             trace_1=trace_1,
+             trace_2=trace_2,
+             control=list(...))
+  
+  
+  #It appears that local searches rapidly start turning in circles around non optimal values
+#   neighbour<-function(x,...){
+#     x + sample(seq(-100,100), length(x), replace=TRUE)}
+#   
+#   fit<-TAopt(OF=shift_optim,
+#               trace_1=trace_1,
+#               trace_2=trace_2,
+#               algo =list(x0=c(0),
+#                    neighbour=neighbour,
+#                    nS=10000,
+#                          ...))
+  
+  
+  
+  return(fit$par)
   
   if(!silent){print(fit)}
   
@@ -64,7 +108,7 @@ align_trace<-function(trace_1, trace_2, silent=F){
 #Test with adam data
 
 
-  shift<-align_trace(trace_1=A7_F, trace_2=B7_F)
+  shift<-align_trace(trace_1=A7_F, trace_2=B7_F,trace=2, maxit=200)
   shift
   shift<-align_trace(trace_1=A7_F, trace_2=AB7_F)
   shift

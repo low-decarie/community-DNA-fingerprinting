@@ -1,3 +1,5 @@
+#Using Adam's data to plot out an example and test functions
+
 rm(list=ls())
 setwd("~/Documents/PhD/Experiments/community-DNA-fingerprinting")
 source("./R/plot_trace.R")
