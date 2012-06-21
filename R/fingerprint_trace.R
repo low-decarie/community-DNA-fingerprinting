@@ -6,8 +6,9 @@ source("./R/blank_length.R")
 
 align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   
-  if(!require(NMOF))install.packages("NMOF")
-  if(!require(parallel))install.packages("parallel")
+  if(!require(NMOF)){install.packages("NMOF")}
+  if(!require(multicore)){install.packages("multicore")}
+  if(!require(parallel)){install.packages("parallel")}
   
   temp_1<-trace_1  
   temp_2<-trace_2
@@ -77,7 +78,7 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                   trace_2=trace_2,
                   trace_3=trace_3,
                   method="multicore",
-                  mc.control = list(mc.cores=1))
+                  mc.control = list(mc.cores=3))
   
   shifts<-fit$minlevels
   shift_1<-shifts[1]
@@ -115,9 +116,10 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   trace_2<-scale_2*trace_2
   
   #Add initial data
-  trace_1<-merge(trace_1, temp_1,
-                 all=T,
+  trace_1<-join(trace_1, temp_1,
+                 type="full",
                  sort=F)
+  
   trace_2<-merge(trace_2, temp_2,
                  all=T,
                  sort=F)
