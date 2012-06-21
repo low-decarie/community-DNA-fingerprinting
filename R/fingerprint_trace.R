@@ -28,12 +28,15 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   
   #Define a scale optimization function
   scale_optim<-function(par, trace_1, trace_2, trace_3){
+    #if(all(par[1]>0, par[1]<1, par[2]>0, par[2]<1)){
     scale_1<-par[1]
     scale_2<-par[2]
     
     ssq<-sum(((scale_1*trace_1+scale_2*trace_2)-trace_3)^2)
     
-    return(ssq)
+    return(ssq)#}else{
+      #return(NA)
+   # }
   }
   
   
@@ -63,7 +66,11 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                      fn=scale_optim,
                      trace_1=trace_1,
                      trace_2=trace_2,
-                     trace_3=trace_3)
+                     trace_3=trace_3,
+                     method="L-BFGS-B",
+                     lower=c(0,0),
+                     upper=c(1,1),
+                     control=list(maxit=15))
                      
     
     return(scale.fit$value[1])
@@ -73,7 +80,7 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                   lower=-200,
                   upper=200,
                   npar=2,
-                  n=11,
+                  n=81,
                   trace_1=trace_1,
                   trace_2=trace_2,
                   trace_3=trace_3,
@@ -106,11 +113,36 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   scale_1<-scale.fit$par[1]
   scale_2<-scale.fit$par[2]
   
+  #Do it using an Differential evolution algorithm
+  # algo <- list(nP = 50L,          ### population size
+  #              nG = 300L,         ### number of generations
+  #              F = 0.01,          ### step size
+  #              CR = 0.9,          ### prob of crossover
+  #              min = c(0, 0),  ### range for initial population
+  #              max = c(1, 1))
+  # 
+  # system.time(scale.fit<-DEopt(OF=scale_optim,
+  #                              algo,
+  #                                  trace_1=trace_1,
+  #                                  trace_2=trace_2,
+  #                                  trace_3=trace_3))
+  #
+  # system.time(scale.fit<-PSopt(OF=scale_optim,
+  #                              algo,
+  #                                  trace_1=trace_1,
+  #                                  trace_2=trace_2,
+  #                                  trace_3=trace_3))
+  
+  
+  
   shift_n_scale<-data.frame(shift_1=shift_1,
                            shift_2=shift_2,
                            scale_1=scale_1,
                            scale_2=scale_2)
   
+  
+  
+  if(trace_values){
   #Scale
   trace_1<-scale_1*trace_1
   trace_2<-scale_2*trace_2
@@ -131,7 +163,7 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                trace_2,
                trace_3)
   
-  if(trace_values){
+  
   print(shift_n_scale)
   return(traces)
   }else{
@@ -146,4 +178,7 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
 
 #Test
 
-shift<-align_trace(trace_1, trace_2, trace_3)
+system.time(shift<-align_trace(trace_1, trace_2, trace_3))
+
+#Optimization effort scales with the square (two parameter) of the number of steps
+#
