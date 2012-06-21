@@ -9,10 +9,6 @@ plot_trace<-function(trace_1,
                      ...){
   
   
-  #Test with Adam's data
-  trace.1<-A7_F
-  trace.2<-B7_F
-  trace.3<-AB7_F
   
   region<-c(10000,11000)
   
@@ -29,9 +25,9 @@ plot_trace<-function(trace_1,
                                   "C",
                                   "G"))}
   
-  melt.1<-melt_trace(trace.1)
-  melt.2<-melt_trace(trace.2)
-  melt.3<-melt_trace(trace.3)
+  melt.1<-melt_trace(trace_1)
+  melt.2<-melt_trace(trace_2)
+  melt.3<-melt_trace(trace_3)
   
   
   trace.plot<-qplot(data=melt.1,

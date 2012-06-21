@@ -1,52 +1,41 @@
 #Align two traces using all base traces (A and B and C...)
 
+#Currently uses exhaustive search of the parameter space
+#lpSolve and Rglpk might be trails for non exhaustive searches
+
+#Currently set up for the use of two cores
+
+source("./R/pad_shift.R")
+source("./R/blank_length.R")
+
+
 align_trace<-function(trace_1, trace_2, silent=F,...){
   
-  if(!require(DEoptim)){install.packages("DEoptim")}
   if(!require(NMOF)){install.packages("NMOF")}
-  if(!require(pso)){install.packages("pso")}
 
+  #Extract base information
+  trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
+  trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
+  
+  #Pad so that all traces have the same length
+  lengthened<-blank_length(trace_1, trace_2, trace_3=trace_2)
+  trace_1<-lengthened[[1]]
+  trace_2<-lengthened[[2]]
   
   
   shift_optim<-function(shift, trace_1, trace_2){
     
     
+    
     #Rounding may help focus on integers, but flattens the function between integers
-    shift<-round(shift)
+#     shift<-round(shift)
     
-    trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
-    trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
-    
-    blank.shift<-data.frame(A=rep(0, abs(shift)),
-                      T=rep(0, abs(shift)),
-                      C=rep(0, abs(shift)),
-                      G=rep(0, abs(shift)))
-    
-    blank.pad<-data.frame(A=rep(0, abs(length(trace_1[,1])-length(trace_2[,1]))),
-                            T=rep(0, abs(length(trace_1[,1])-length(trace_2[,1]))),
-                            C=rep(0, abs(length(trace_1[,1])-length(trace_2[,1]))),
-                            G=rep(0, abs(length(trace_1[,1])-length(trace_2[,1]))))
-    
-    
-    if(length(trace_1[,1])<length(trace_2[,1])){
-      trace_1<-rbind(trace_1, blank.pad)
-    }
-    if(length(trace_1[,1])>length(trace_2[,1])){
-      trace_2<-rbind(trace_2, blank.pad)
-    }
-    
-    if(shift==0){
-      trace_1<-trace_1
-      trace_2<-trace_2
-    }
-    if(shift>0){
-      trace_1<-rbind(trace_1, blank.shift )
-      trace_2<-rbind(blank.shift, trace_2)
-    }
-    if(shift<0){
-      trace_1<-rbind(blank.shift,trace_1)
-      trace_2<-rbind(trace_2, blank.shift)
-    }
+
+    #Pad with assigned shifts
+    #Shift trace 1 as function of 2 and 3
+    padded<-pad.shift(shift, trace_1=trace_1, trace_2=trace_2, trace_3=trace_2)
+    trace_1<-padded[[1]]
+    trace_2<-padded[[2]]
 
 
     
@@ -56,49 +45,20 @@ align_trace<-function(trace_1, trace_2, silent=F,...){
     
     return(deviation)
   }
+
   
-#Searching continuous space is not very good
-#   fit<-optimize(f=shift_optim,
-#                 lower=-1000, 
-#                 upper=1000, 
-#                 trace_1=trace_1,
-#                 trace_2=trace_2,
-#                 tol=3)
-  
-  
-#   neighbour<-function(x,...){
-#        x + sample(seq(-20,20), length(x), replace=TRUE)}
-#   
-#    fit<-optim(par=0,
-#               f=shift_optim,
-#               gr=neighbour,
-#               method="SANN",
-#                   trace_1=trace_1,
-#                   trace_2=trace_2,
-#               control=list(...))
-  
-  fit<-psoptim(par=0,
-             fn=shift_optim,
-             trace_1=trace_1,
-             trace_2=trace_2,
-             control=list(...))
+  fit<-gridSearch(fun=shift_optim,
+                  lower=-250,
+                  upper=250,
+                  npar=1,
+                  n=501,
+                  trace_1=trace_1,
+                  trace_2=trace_2,
+                  method="multicore",
+                  mc.control = list(mc.cores=2))
   
   
-  #It appears that local searches rapidly start turning in circles around non optimal values
-#   neighbour<-function(x,...){
-#     x + sample(seq(-100,100), length(x), replace=TRUE)}
-#   
-#   fit<-TAopt(OF=shift_optim,
-#               trace_1=trace_1,
-#               trace_2=trace_2,
-#               algo =list(x0=c(0),
-#                    neighbour=neighbour,
-#                    nS=10000,
-#                          ...))
-  
-  
-  
-  return(fit$par)
+  return(fit$minlevels)
   
   if(!silent){print(fit)}
   
@@ -108,9 +68,13 @@ align_trace<-function(trace_1, trace_2, silent=F,...){
 #Test with adam data
 
 
-  shift<-align_trace(trace_1=A7_F, trace_2=B7_F,trace=2, maxit=200)
+  shift<-align_trace(trace_1, trace_2)
   shift
-  shift<-align_trace(trace_1=A7_F, trace_2=AB7_F)
-  shift
-  shift<-align_trace(trace_1=B7_F, trace_2=AB7_F)
-  shift
+   shift<-align_trace(trace_1, trace_3)
+   shift
+   shift<-align_trace(trace_2, trace_3)
+   shift
+
+#As a sanity check:
+shift<-align_trace(trace_2, trace_1)
+shift

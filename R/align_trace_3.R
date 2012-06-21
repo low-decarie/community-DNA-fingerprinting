@@ -1,7 +1,24 @@
 #Align 3 traces simultaneously
 #Align using all base traces (A and B and C...)
 
+source("./R/pad_shift.R")
+source("./R/blank_length.R")
+
+
 align_trace<-function(trace_1, trace_2, trace_3, silent=F){
+  
+  if(!require(NMOF)){install.packages("NMOF")}
+  
+  #Extract base trace information
+  trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
+  trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
+  trace_3<-trace_3[,names(trace_3) %in% c("A","T", "C","G")]
+  
+  #Pad so that all traces have the same length
+  lengthened<-blank_length(trace_1, trace_2, trace_3)
+  trace_1<-lengthened[[1]]
+  trace_2<-lengthened[[2]]
+  trace_3<-lengthened[[3]]
   
   
   shift_optim<-function(par, trace_1, trace_2, trace_3){
@@ -9,90 +26,38 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
     shift_1<-par[1]
     shift_2<-par[2]
     
-    check.integer <- function(N){
-      !length(grep("[^[:digit:]]", as.character(N)))
-    }
-    
-    if(all(check.integer(shift_1), check.integer(shift_2))){
-    
-  #Extract base trace information
-    trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
-    trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
-    trace_3<-trace_3[,names(trace_3) %in% c("A","T", "C","G")]
-    
-
-    
-    
-#Pad so that all traces have the same length
-    max.length<-max(length(trace_1[,1]), length(trace_2[,1]),length(trace_3[,1]))
-    
-    blank_pad<-function(trace, max.length){
       
-    trace<-rbind(trace, data.frame(A=rep(0, max.length-length(trace[,1])),
-                          T=rep(0, max.length-length(trace[,1])),
-                          C=rep(0, max.length-length(trace[,1])),
-                          G=rep(0, max.length-length(trace[,1]))))}
-    
-    trace_1<-blank_pad(trace=trace_1, max.length=max.length)
-    trace_2<-blank_pad(trace=trace_2, max.length=max.length)
-    trace_3<-blank_pad(trace=trace_3, max.length=max.length)
-    
-#############################
-
-#Pad with assigned shifts
-    blank.shift.1<-data.frame(A=rep(0, abs(shift_1)),
-                              T=rep(0, abs(shift_1)),
-                              C=rep(0, abs(shift_1)),
-                              G=rep(0, abs(shift_1)))
-    blank.shift.2<-data.frame(A=rep(0, abs(shift_2)),
-                              T=rep(0, abs(shift_2)),
-                              C=rep(0, abs(shift_2)),
-                              G=rep(0, abs(shift_2)))
-
-    if(shift_1>0){
-      trace_1<-rbind(trace_1, blank.shift.1)
-      trace_2<-rbind(blank.shift.1, trace_2)
-      trace_3<-rbind(blank.shift.1, trace_3)
-    }
-    if(shift_1<0){
-      trace_1<-rbind(blank.shift.1,trace_1)
-      trace_2<-rbind(trace_2, blank.shift.1)
-      trace_3<-rbind(trace_3, blank.shift.1)
-    }
-    
-    if(shift_2>0){
-      trace_2<-rbind(trace_2, blank.shift.2 )
-      trace_1<-rbind(blank.shift.2, trace_1)
-      trace_3<-rbind(blank.shift.2, trace_3)
-    }
-    if(shift_2<0){
-      trace_2<-rbind(blank.shift.2,trace_2)
-      trace_1<-rbind(trace_1, blank.shift.2)
-      trace_3<-rbind(trace_3, blank.shift.2)
-    }
-    
-
-    
+    #Pad with assigned shifts
+    #Shift trace 1 as function of 2 and 3
+    padded_1<-pad.shift(shift_1, trace_1, trace_2, trace_3)
+    trace_1<-padded_1[[1]]
+    trace_2<-padded_1[[2]]
+    trace_3<-padded_1[[3]]
+    #Shift trace 2 as a function of 1 and 3
+    padded_2<-pad.shift(shift_2, trace_2, trace_1, trace_3)
+    trace_1<-padded_2[[1]]
+    trace_2<-padded_2[[2]]
+    trace_3<-padded_2[[3]]
+      
     deviation<-sum((trace_1-trace_2)^2, (trace_1-trace_3)^2, (trace_2-trace_3)^2)
-    
-    
-  }else{
-    deviation<-NA
-  } 
-  return(deviation)
+      
+    return(deviation)
   }
   
-  fit<-optim(par=c(0,0),
-              fn=shift_optim,
-                trace_1=trace_1,
-                trace_2=trace_2,
-              trace_3=trace_3,
-             method="SANN",
-             control=list(trace=2, ndeps=2))
+  fit<-gridSearch(fun=shift_optim,
+                  lower=-200,
+                  upper=200,
+                  npar=2,
+                  n=41,
+                  trace_1=trace_1,
+                  trace_2=trace_2,
+                  trace_3=trace_3,
+                  method="multicore",
+                  mc.control = list(mc.cores=2))
   
-  return(fit)
   
-  if(!silent){print(fit)}
+  return(fit$minlevels)
+  
   
 }
 
@@ -100,4 +65,4 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
 #Test with adam data
 
 
-shift<-align_trace(trace_1=A7_F, trace_2=B7_F, trace_3=AB7_F)
+shift<-align_trace(trace_1, trace_2, trace_3)
