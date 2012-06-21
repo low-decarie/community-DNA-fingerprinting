@@ -24,6 +24,14 @@ trace<-data.frame(datum=1:length(raw.trace$Data[["DATA.1"]]),
                         C=raw.trace$Data[["DATA.3"]],
                         G=raw.trace$Data[["DATA.4"]])
 
+if(!require(plyr)){
+  install.packages("plyr")}
+
+rm.neg<-colwise(function(x){
+  return(ifelse(x < 0.1, 0, x))})
+
+trace<-rm.neg(trace)
+
 
 
 #Call bases
@@ -57,13 +65,7 @@ trace<-ddply(.data=trace,
                     return(trace)},
                   .progress="text")
 
-if(!require(plyr)){
-  install.packages("plyr")}
 
-rm.neg<-colwise(function(x){
-  return(ifelse(x < 0.1, 0, x))})
-
-trace<-rm.neg(trace)
 
 #Smooth max value
 trace$smooth.max<-as.numeric(with(trace, smooth_trace(max.value, type, width)))
