@@ -80,7 +80,7 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                   lower=-200,
                   upper=200,
                   npar=2,
-                  n=81,
+                  n=401,
                   trace_1=trace_1,
                   trace_2=trace_2,
                   trace_3=trace_3,
@@ -178,10 +178,24 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   
 }
 
-
+####################################################################
 #Test
 
+
+rm(list=ls())
+setwd("~/Documents/Etienne/community-DNA-fingerprinting")
+#Test with adam data
+load("./Outputs/adam_test_data.RData")
+trace_1<-adam_test_data[[1]]
+trace_2<-adam_test_data[[2]]
+trace_3<-adam_test_data[[3]]
+
+
+
+##################################
 system.time(shift<-align_trace(trace_1, trace_2, trace_3))
 
+
+save(shift, file="./Outputs/Shift and scale.RData")
 #Optimization effort scales with the square (two parameter) of the number of steps
 #
