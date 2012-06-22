@@ -109,7 +109,10 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
                    fn=scale_optim,
                    trace_1=trace_1,
                    trace_2=trace_2,
-                   trace_3=trace_3)
+                   trace_3=trace_3,
+                   method="L-BFGS-B",
+                   lower=c(0,0),
+                   upper=c(1,1))
   scale_1<-scale.fit$par[1]
   scale_2<-scale.fit$par[2]
   
