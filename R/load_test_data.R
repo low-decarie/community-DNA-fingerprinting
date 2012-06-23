@@ -4,8 +4,8 @@
 # 
 # save("adam_test_data", file="./Outputs/adam_test_data.RData")
 
-rm(list=ls())
-setwd("~/Documents/Etienne/community-DNA-fingerprinting")
+#rm(list=ls())
+#setwd("~/Documents/Etienne/community-DNA-fingerprinting")
 #Test with adam data
 load("./Outputs/adam_test_data.RData")
 trace_1<-adam_test_data[[1]]

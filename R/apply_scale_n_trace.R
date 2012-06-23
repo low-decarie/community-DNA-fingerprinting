@@ -4,6 +4,14 @@ source("./R/blank_length.R")
 apply_shift_n_scale<-function(shift_1,shift_2, scale_1, scale_2,
                     trace_1, trace_2, trace_3){
   
+  
+  if(!require(data.table)){
+    install.packages("data.table")}
+#   
+#    trace_1<-data.table(trace_1)
+#    trace_2<-data.table(trace_2)
+#    trace_3<-data.table(trace_3)
+  
   temp_1<-trace_1  
   temp_2<-trace_2
   temp_3<-trace_3
@@ -36,15 +44,17 @@ apply_shift_n_scale<-function(shift_1,shift_2, scale_1, scale_2,
   trace_2<-scale_2*trace_2
   
   #Add initial data
-  trace_1<-merge(trace_1, temp_1,
-                 all=T,
-                 sort=F)
-  trace_2<-merge(trace_2, temp_2,
-                 all=T,
-                 sort=F)
-  trace_3<-merge(trace_3, temp_3,
-                 all=T,
-                 sort=F)
+  # trace_1<-trace_1[temp_1]
+#   trace_2<-merge(trace_2, temp_2,
+#                  all=T,
+#                  sort=F)
+#   trace_3<-merge(trace_3, temp_3,
+#                  all=T,
+#                  sort=F)
+  
+#   trace_1<-data.table(trace_1)
+#   temp_1<-data.table(temp_1)
+#   trace_1<-trace_1[temp_1]
   
   traces<-list(trace_1,
                trace_2,
@@ -53,9 +63,10 @@ apply_shift_n_scale<-function(shift_1,shift_2, scale_1, scale_2,
   return(traces)
 }
 
+setwd("~/Documents/PhD/Experiments/community-DNA-fingerprinting")
+load("./Outputs/Shift and scale at 5 res.RData")
 
-
-traces<-apply_shift_n_scale(70, 90, 0.4479, 0.501264,
+traces<-apply_shift_n_scale(shift[[1]], shift[[2]], shift[[3]], shift[[4]],
                             trace_1, trace_2, trace_3)
 
 trace_1<-traces[[1]]
