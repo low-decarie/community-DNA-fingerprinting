@@ -39,14 +39,28 @@ create.sp<-function(n.sp, n.loci)
 }			
 			
 			
-#create a list of frequencies parameters for each species in sp.seq
+# #create a list of frequencies parameters for each species in sp.seq
+# 
+# create.randomf<-function(sp.seq)
+# {
+# 	#extract values from sp.seq
+# 	n.sp<-length(unique(sp.seq$sp))
+# 	#create random parameters summing to 1
+#   #f.p<-NULL
+# 	f.p<-round(t(rdirichlet(1, rep(runif(1,0,2),n.sp))),3)
+# 	f.p
+#   #hist(f.p)
+# }
+
 create.randomf<-function(sp.seq)
 {
-	#extract values from sp.seq
-	n.sp<-length(unique(sp.seq$sp))
-	#create random parameters summing to 1
-	f.p<-round(t(rdirichlet(1, rep(1,n.sp))),3)
-	f.p
+  #extract values from sp.seq
+  n.sp<-length(unique(sp.seq$sp))
+  f.p<-NULL
+  for(i in 1:n.sp){
+    f.p<-c(f.p, runif(1, 0, 1-sum(f.p)))
+  }
+  return(f.p)
 }
 
 
