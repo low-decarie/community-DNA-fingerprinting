@@ -192,6 +192,21 @@ trace_3<-adam_test_data[[3]]
 
 
 
+##########
+# Raise the threshold
+#########
+
+rm.low<-colwise(function(x){
+  return(ifelse(x < 500, 0, x))})
+
+rm.low.df<-function(trace){
+  trace[,names(trace) %in% c("A","T","C","G")]<-rm.low(trace[,names(trace) %in% c("A","T","C","G")])
+  return(trace)
+}
+
+trace_1<-rm.low.df(trace_1)
+trace_2<-rm.low.df(trace_2)
+trace_3<-rm.low.df(trace_3)
 ##################################
 system.time(shift<-align_trace(trace_1, trace_2, trace_3))
 
