@@ -172,7 +172,7 @@ sum.sq<-function(f.p,sp.seq, sample.seq)
 
 ###############################
 #sensitivity analysis settings
-steps<-3  	#amount of smoothing
+steps<-5  	#amount of smoothing
 max.n<-100	#max number of species and max.n/3 for loci
 #values give to steps is to the fifth power for runtime
 ###############################
