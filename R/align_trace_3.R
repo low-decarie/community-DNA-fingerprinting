@@ -5,7 +5,7 @@ source("./R/pad_shift.R")
 source("./R/blank_length.R")
 
 
-align_trace<-function(trace_1, trace_2, trace_3, silent=F){
+align_trace<-function(trace_1, trace_2, trace_3, silent=F, max.shift=10){
   
   if(!require(NMOF)){install.packages("NMOF")}
   
@@ -45,10 +45,10 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
   }
   
   fit<-gridSearch(fun=shift_optim,
-                  lower=-200,
-                  upper=200,
+                  lower=-max.shift,
+                  upper=max.shift,
                   npar=2,
-                  n=41,
+                  n=length(-max.shift:max.shift),
                   trace_1=trace_1,
                   trace_2=trace_2,
                   trace_3=trace_3,
@@ -65,4 +65,4 @@ align_trace<-function(trace_1, trace_2, trace_3, silent=F){
 #Test with adam data
 
 
-shift<-align_trace(trace_1, trace_2, trace_3)
+#shift<-align_trace(trace_1, trace_2, trace_3)

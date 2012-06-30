@@ -2,13 +2,15 @@ if(!require(gridExtra)){
   install.packages("gridExtra")}
 
 
+source("./R/plot_trace.R")
+
 pdf("./Plots/Adam_trace_plots.pdf")
 
 base.call<-T
 split<-F
 for(split in c(F,T)){
 plot.trace_1<-plot_trace(trace_1,
-                      region=c(6000,6150),
+                      region=c(3000,12000),
                       print.plot=F,
                       main="trace_1",
                       split=split,

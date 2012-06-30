@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("~/Documents/Etienne/community-DNA-fingerprinting")
+setwd("~/Documents/PhD/Experiments/community-DNA-fingerprinting")
 #Test with adam data
 load("./Outputs/adam_test_data.RData")
 trace_1<-adam_test_data[[1]]
