@@ -1,5 +1,5 @@
 plot_trace<-function(trace,
-                     region=c(1, length(trace[,1])),
+                     region=c(min(trace$datum), max(trace$datum)),
                      print.plot=T,
                      split=F,
                      maxed=F,
@@ -27,7 +27,12 @@ trace.plot<-qplot(data=melt.trace,
                     colour=variable,
                     geom="line",
                   xlim=region,
-                  ...)
+                  ...)+
+                    scale_colour_manual(values=c("A"="#F8766D",
+                                        "T"="#C77CFF",
+                                        "C"="#7CAE00",
+                                        "G"="#00BFC4",
+                                        "N"="black"))
   
 if(split){
   trace.plot<-trace.plot+facet_grid(.~variable)
@@ -36,10 +41,11 @@ if(split){
 if(maxed){trace.plot<-trace.plot+geom_line(aes(y=smooth.max,
                                                colour="maxed values"))}
 
-if(base.call){trace.plot<-trace.plot+geom_text(aes(y=rep(0,length(value)),
+if(base.call){trace.plot<-trace.plot+geom_text(aes(y=rep(2000,length(value)),
                                                    label=base.call,
                                                    colour=base.call,
-                                                   alpha=peak))+
+                                                   alpha=peak),
+                                               size=I(8))+
                                                      opts(legend.position = "none")+
                                                      scale_alpha_manual(values=c(0,1),guide="none")}
   

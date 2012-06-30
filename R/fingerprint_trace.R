@@ -19,6 +19,20 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
   trace_3<-trace_3[,names(trace_3) %in% c("A","T", "C","G")]
   
+  ####
+  # Get ratios
+  ###
+  get_ratio<-function(trace){
+    summed<-apply(trace, MARGIN=1, FUN=sum)
+    return(trace/summed)
+  }
+  
+  trace_1<-get_ratio(trace_1)
+  trace_2<-get_ratio(trace_2)
+  trace_3<-get_ratio(trace_3)
+  
+  
+  
   #Pad so that all traces have the same length
   lengthened<-blank_length(trace_1, trace_2, trace_3)
   trace_1<-lengthened[[1]]
@@ -105,6 +119,12 @@ align_trace<-function(trace_1, trace_2, trace_3, trace_values=F){
   trace_3<-padded_2[[3]]
   
   #Obtain the scale parameter on the best aligned sequences
+scale.fit<-function(trace_1,trace_2, trace_3){
+  # #Extract base trace information
+  trace_1<-trace_1[,names(trace_1) %in% c("A","T", "C","G")]
+  trace_2<-trace_2[,names(trace_2) %in% c("A","T", "C","G")]
+  trace_3<-trace_3[,names(trace_3) %in% c("A","T", "C","G")]
+  
   scale.fit<-optim(par=c(0.5, 0.5),
                    fn=scale_optim,
                    trace_1=trace_1,

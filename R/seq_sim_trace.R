@@ -1,3 +1,5 @@
+#Create a simulated trace from sequence data
+
 sequence_sim_trace<-function(sequence,...){
   
   trace_value<-function(base){
@@ -51,12 +53,14 @@ sequence_sim_trace<-function(sequence,...){
 sequence.1<-"ATCG"
 sequence.2<-"AGCG"
 sequence.3<-"TGCG"
+
+source("./R/smooth_trace.R")
 sim.trace.1<-sequence_sim_trace(sequence=sequence.1)
 sim.trace.2<-sequence_sim_trace(sequence=sequence.2)
 sim.trace.3<-sequence_sim_trace(sequence=sequence.3)
 
 plot.quant<-function(){
-for(q.1 in seq(0.1,1,0.01)){
+for(q.1 in c(seq(0,1,0.02), sort(seq(0,1,0.02), decreasing = T))){
   #for(q.2 in 1:10){
     #for(q.3 in 1:10){
 
