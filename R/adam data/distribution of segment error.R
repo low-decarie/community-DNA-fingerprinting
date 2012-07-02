@@ -91,8 +91,9 @@ segment.size.vector<-c(100,200,400,800,1600,3200)
 
 require(plyr)
 require(reshape)
+require(ggplot2)
 require(doMC)
-registerDoMC(2)
+registerDoMC(3)
 getDoParWorkers()
 
 
@@ -104,9 +105,11 @@ scales<-ldply(.data=start.vector,
 
 scales<-melt(scales)
 
+require(modeest)
+
 scales<-ddply(.data=scales,
                 .variables="variable",
-                       median=median(value),
+                       mode=mlv(value, method = "mfv")$M,
                 transform)
 
 p<-qplot(data=scales,
@@ -115,13 +118,13 @@ p<-qplot(data=scales,
       colour=variable,
       geom="density",
       alpha=I(0.5))+
-        geom_vline(aes(xintercept =median, colour=variable))+
-        geom_text(aes(x=median, y=2.5,label=round(median, digits=3)))
+        geom_vline(aes(xintercept =mode, colour=variable))+
+        geom_text(aes(x=mode, y=-0.1,label=round(mode, digits=3)), colour=I("black"), size=10)
 
 print(p)
 
 
-space<-data.frame(start=rep(start.vector, length(segment.size)), size=rep(segment.size, each=length(start.vector)))
+space<-data.frame(start=rep(start.vector, length(segment.size.vector)), size=rep(segment.size.vector, each=length(start.vector)))
 space$ID<-1:nrow(space)
 
 
@@ -143,13 +146,22 @@ p<-qplot(data=scales_size_range,
 
 print(p)
 
+
+scales_size_range$size<-factor(scales_size_range$size)
+scales_size_range$size.label<-paste("segment length=", scales_size_range$size)
+scales_size_range$size.label<-reorder(scales_size_range$size.label, scales_size_range$size)
+
 p<-qplot(data=scales_size_range,
          x=value,
+         xlab="Proportion of types",
          colour=variable,
-         facets=~size,
-         geom=density)
+         fill=variable,
+         alpha=I(0.5),
+         geom="density")+facet_wrap(~size, scale="free_y")
 
 print(p)
          
+
+save(scales_size_range, file="./Outputs/scales_size_range.RData")
 
 dev.off()
